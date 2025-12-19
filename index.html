@@ -3,45 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xab Mini App</title>
+<title>Xab Wallet</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
+/* ===== ОСНОВА ===== */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+  font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   color: white;
+
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    #0b1f2a 0%,
+    #123847 40%,
+    #0b1f2a 100%
+  );
+  background-attachment: fixed;
 }
 
+/* ===== ЭКРАНЫ ===== */
 .screen {
   display: none;
+  min-height: 100vh;
   padding: 16px;
   padding-bottom: 90px;
+  box-sizing: border-box;
 }
 
 .screen.active {
   display: block;
 }
 
+/* ===== ЗАГОЛОВКИ ===== */
+h2 {
+  margin-top: 0;
+  font-size: 22px;
+}
+
+/* ===== БАЛАНС ===== */
 .balance {
   font-size: 18px;
   margin-bottom: 16px;
 }
 
+/* ===== КАРТОЧКИ ===== */
 .task {
-  background: #1e2a38;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(6px);
 }
 
+.task-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.task-reward {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* ===== КНОПКИ ===== */
 .task button {
+  margin-top: 10px;
   width: 100%;
-  margin-top: 8px;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 10px;
   border: none;
   background: #2ea6ff;
   color: white;
@@ -49,20 +81,22 @@ body {
 }
 
 .task button:disabled {
-  background: #555;
+  background: #4a4a4a;
 }
 
+/* ===== НИЖНЕЕ МЕНЮ ===== */
 .nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 70px;
-  background: #0b1622;
+  background: rgba(10, 20, 30, 0.9);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  border-top: 1px solid #223;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
 
 .nav button {
@@ -70,38 +104,39 @@ body {
   border: none;
   color: white;
   font-size: 14px;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .nav button.active {
   opacity: 1;
-  font-weight: bold;
+  font-weight: 600;
 }
 </style>
 </head>
 
 <body>
 
-<!-- ЗАДАНИЯ -->
+<!-- ===== ЗАДАНИЯ ===== -->
 <div id="tasksScreen" class="screen active">
   <h2>Задания</h2>
   <div class="balance">Баланс: <span id="balance">0</span> ₽</div>
   <div id="tasks"></div>
 </div>
 
-<!-- БОНУСЫ -->
+<!-- ===== БОНУСЫ ===== -->
 <div id="bonusScreen" class="screen">
   <h2>Бонусы</h2>
-  <p>🎁 Скоро здесь будут бонусы</p>
+  🎁 Скоро здесь будут бонусы
 </div>
 
-<!-- ПРОФИЛЬ -->
+<!-- ===== ПРОФИЛЬ ===== -->
 <div id="profileScreen" class="screen">
   <h2>Профиль</h2>
-  <p>ID: <span id="uid"></span></p>
+  <p>ID пользователя:</p>
+  <b id="uid"></b>
 </div>
 
-<!-- НИЖНЕЕ МЕНЮ -->
+<!-- ===== НИЖНЕЕ МЕНЮ ===== -->
 <div class="nav">
   <button id="btnTasks" class="active" onclick="showScreen('tasks')">Задания</button>
   <button id="btnBonus" onclick="showScreen('bonus')">Бонусы</button>
@@ -109,21 +144,25 @@ body {
 </div>
 
 <script>
+/* ===== TELEGRAM ===== */
 const tg = Telegram.WebApp;
 tg.ready();
 
+/* ===== USER ===== */
 const userId = tg.initDataUnsafe?.user?.id || "guest";
 document.getElementById("uid").innerText = userId;
 
+/* ===== STORAGE ===== */
 const balanceKey = `balance_${userId}`;
 const tasksKey = `tasks_${userId}`;
 
 let balance = parseInt(localStorage.getItem(balanceKey)) || 0;
 let completedTasks = JSON.parse(localStorage.getItem(tasksKey)) || [];
 
+/* ===== ЗАДАНИЯ ===== */
 const tasks = [
-  { id: 1, title: "Подписка на канал", reward: 10 },
-  { id: 2, title: "Открыть сайт", reward: 15 },
+  { id: 1, title: "Подписаться на Telegram канал", reward: 10 },
+  { id: 2, title: "Открыть сайт партнёра", reward: 15 },
   { id: 3, title: "Зайти в бота", reward: 5 }
 ];
 
@@ -139,11 +178,13 @@ function renderTasks() {
 
   tasks.forEach(task => {
     const done = completedTasks.includes(task.id);
+
     const div = document.createElement("div");
     div.className = "task";
+
     div.innerHTML = `
-      <div><b>${task.title}</b></div>
-      <div>+${task.reward} ₽</div>
+      <div class="task-title">${task.title}</div>
+      <div class="task-reward">+${task.reward} ₽</div>
       <button ${done ? "disabled" : ""}>
         ${done ? "Выполнено" : "Выполнить"}
       </button>
@@ -162,6 +203,7 @@ function renderTasks() {
   });
 }
 
+/* ===== НАВИГАЦИЯ ===== */
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
@@ -182,5 +224,6 @@ function showScreen(name) {
 
 renderTasks();
 </script>
+
 </body>
 </html>
