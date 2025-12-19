@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body style="background:#0f0f0f;color:white;font-family:Arial;padding:20px">
+
+  <h2>💰 Баланс</h2>
+  <div id="balance">0</div>
+
+  <h3>📋 Задание</h3>
+  <button onclick="completeTask()" style="padding:12px;width:100%">
+    Выполнить задание
+  </button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let balance = localStorage.getItem('balance') || 0;
+    document.getElementById('balance').innerText = balance;
+
+    function completeTask() {
+      balance = parseInt(balance) + 10;
+      localStorage.setItem('balance', balance);
+      document.getElementById('balance').innerText = balance;
+      alert('+10 баллов');
+    }
+  </script>
+
+</body>
+</html>
