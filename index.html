@@ -153,6 +153,7 @@
 <script>
   const tg = window.Telegram.WebApp;
   tg.ready();
+  tg.expand();
 
   const user = tg.initDataUnsafe.user || {};
   const uid = user.id || 0;
