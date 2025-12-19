@@ -2,26 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Xab Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      font-family: Arial, sans-serif;
       background: #0f0f0f;
-      color: #ffffff;
-    }
-
-    .screen {
-      display: none;
+      color: white;
       padding: 20px;
-      padding-bottom: 90px;
-    }
-
-    .screen.active {
-      display: block;
     }
 
     h2 {
@@ -29,123 +21,106 @@
     }
 
     .balance {
-      font-size: 36px;
-      font-weight: bold;
-      margin-top: 10px;
+      font-size: 32px;
+      margin-bottom: 20px;
     }
 
-    .card {
+    .task {
       background: #1c1c1c;
+      padding: 15px;
       border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
-    .main-btn {
+    button {
       width: 100%;
       padding: 12px;
+      margin-top: 10px;
+      font-size: 15px;
       border: none;
       border-radius: 10px;
       background: #2ea6ff;
-      color: #fff;
-      font-size: 16px;
-      margin-top: 10px;
+      color: white;
     }
 
-    /* bottom menu */
-    .bottom-menu {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 70px;
-      background: #121212;
-      display: flex;
-      border-top: 1px solid #222;
+    .done {
+      background: #333;
+      color: #aaa;
     }
 
-    .bottom-menu button {
-      flex: 1;
-      background: none;
-      border: none;
+    .user {
+      font-size: 12px;
       color: #888;
-      font-size: 14px;
-    }
-
-    .bottom-menu button.active {
-      color: #2ea6ff;
-      font-weight: bold;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- HOME -->
-  <div id="home" class="screen active">
-    <h2>💰 Баланс</h2>
-    <div class="balance" id="balance">0</div>
-  </div>
+  <div class="user" id="userInfo"></div>
 
-  <!-- TASKS -->
-  <div id="tasks" class="screen">
-    <h2>📋 Задания</h2>
+  <h2>💰 Баланс</h2>
+  <div class="balance" id="balance">0</div>
 
-    <div class="card">
-      <div>Выполнить тестовое задание</div>
-      <button class="main-btn" onclick="completeTask()">Получить +10</button>
-    </div>
-  </div>
+  <h2>📋 Задания</h2>
 
-  <!-- PROFILE -->
-  <div id="profile" class="screen">
-    <h2>💼 Профиль</h2>
-    <p>ID: <span id="userid">—</span></p>
-  </div>
-
-  <!-- BOTTOM MENU -->
-  <div class="bottom-menu">
-    <button id="btn-home" class="active" onclick="showScreen('home')">🏠 Главная</button>
-    <button id="btn-tasks" onclick="showScreen('tasks')">📋 Задания</button>
-    <button id="btn-profile" onclick="showScreen('profile')">💼 Профиль</button>
+  <div class="task" id="task1">
+    <div>🔹 Простое задание</div>
+    <div>Награда: +5</div>
+    <button onclick="completeTask(1, 5)" id="taskBtn1">Выполнить</button>
   </div>
 
   <script>
     const tg = Telegram.WebApp;
-    tg.expand();
+    tg.ready();
 
-    const storage = tg.CloudStorage;
-    const BALANCE_KEY = 'balance';
-
-    // user id
-    document.getElementById('userid').innerText =
-      tg.initDataUnsafe?.user?.id || 'guest';
-
-    // load balance
-    storage.getItem(BALANCE_KEY, (err, value) => {
-      const balance = Number(value || 0);
-      document.getElementById('balance').innerText = balance;
-    });
-
-    function completeTask() {
-      storage.getItem(BALANCE_KEY, (err, value) => {
-        let balance = Number(value || 0);
-        balance += 10;
-
-        storage.setItem(BALANCE_KEY, String(balance), () => {
-          document.getElementById('balance').innerText = balance;
-          tg.showAlert('Задание выполнено! +10');
-        });
-      });
+    const user = tg.initDataUnsafe?.user;
+    if (!user) {
+      alert("Открой через Telegram");
     }
 
-    function showScreen(name) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.bottom-menu button').forEach(b => b.classList.remove('active'));
+    const userId = user.id;
+    document.getElementById("userInfo").innerText =
+      "User ID: " + userId;
 
-      document.getElementById(name).classList.add('active');
-      document.getElementById('btn-' + name).classList.add('active');
+    const balanceKey = "balance_" + userId;
+    let balance = parseInt(localStorage.getItem(balanceKey)) || 0;
+
+    function updateBalance() {
+      document.getElementById("balance").innerText = balance;
+      localStorage.setItem(balanceKey, balance);
     }
+
+    function completeTask(taskId, reward) {
+      const taskKey = "task_" + taskId + "_" + userId;
+
+      if (localStorage.getItem(taskKey)) {
+        alert("Задание уже выполнено");
+        return;
+      }
+
+      balance += reward;
+      localStorage.setItem(taskKey, "done");
+      updateBalance();
+      updateTaskUI(taskId);
+
+      tg.HapticFeedback.impactOccurred("medium");
+    }
+
+    function updateTaskUI(taskId) {
+      const taskKey = "task_" + taskId + "_" + userId;
+      const btn = document.getElementById("taskBtn" + taskId);
+
+      if (localStorage.getItem(taskKey)) {
+        btn.innerText = "✔ Выполнено";
+        btn.disabled = true;
+        btn.classList.add("done");
+      }
+    }
+
+    updateBalance();
+    updateTaskUI(1);
   </script>
 
 </body>
