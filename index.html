@@ -39,10 +39,7 @@
       display: block;
     }
 
-    h2 {
-      margin-top: 0;
-      font-size: 22px;
-    }
+    h2 { margin-top: 0; font-size: 22px; }
 
     .card {
       background: rgba(255,255,255,0.06);
@@ -65,10 +62,7 @@
       cursor: pointer;
     }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .bottom-nav {
       position: fixed;
@@ -90,40 +84,34 @@
       font-size: 12px;
     }
 
-    .nav-btn.active {
-      color: #00c6ff;
-    }
-
-    .nav-btn div {
-      font-size: 22px;
-      margin-bottom: 4px;
-    }
+    .nav-btn.active { color: #00c6ff; }
+    .nav-btn div { font-size: 22px; margin-bottom: 4px; }
   </style>
 </head>
 
 <body>
 
+<!-- ===== ЗАДАНИЯ ===== -->
 <div class="screen active" id="tasks">
   <h2>📋 Задания</h2>
-
   <div class="card" id="task1">
     <p>Подписаться на Telegram</p>
     <button onclick="completeTask()">Выполнить +0.1 TON</button>
   </div>
 </div>
 
+<!-- ===== БОНУСЫ ===== -->
 <div class="screen" id="bonus">
   <h2>🎁 Бонусы</h2>
-
   <div class="card">
     <button id="bonusBtn" onclick="claimBonus()">Получить 0.01 TON 🎁</button>
     <p id="bonusTimer" style="margin-top:10px; opacity:0.7;"></p>
   </div>
 </div>
 
+<!-- ===== ПРОФИЛЬ ===== -->
 <div class="screen" id="profile">
   <h2>👤 Профиль</h2>
-
   <div class="card">
     <p>ID: <span id="uid">—</span></p>
     <p>Имя: <span id="uname">—</span></p>
@@ -131,6 +119,7 @@
   </div>
 </div>
 
+<!-- ===== ИНВЕСТИЦИИ ===== -->
 <div class="screen" id="invest">
   <h2>📈 Инвестиции</h2>
   <div class="card">
@@ -138,10 +127,23 @@
   </div>
 </div>
 
+<!-- ===== РЕФЕРАЛЫ (ДОБАВЛЕНО) ===== -->
+<div class="screen" id="ref">
+  <h2>🤝 Рефералы</h2>
+  <div class="card">
+    <p>Приглашено: <b><span id="refCount">0</span></b></p>
+    <p>Награда за друга: <b>+0.05 TON</b></p>
+    <button onclick="copyRef()">Скопировать реф-ссылку</button>
+    <p id="refLink" style="margin-top:10px; opacity:0.7;"></p>
+  </div>
+</div>
+
+<!-- ===== НИЖНЕЕ МЕНЮ (ДОБАВЛЕНА КНОПКА РЕФЕРАЛЫ) ===== -->
 <div class="bottom-nav">
   <div class="nav-btn active" onclick="show('tasks')"><div>📋</div>Задания</div>
   <div class="nav-btn" onclick="show('bonus')"><div>🎁</div>Бонусы</div>
   <div class="nav-btn" onclick="show('invest')"><div>📈</div>Инвестиции</div>
+  <div class="nav-btn" onclick="show('ref')"><div>🤝</div>Реф</div>
   <div class="nav-btn" onclick="show('profile')"><div>👤</div>Профиль</div>
 </div>
 
@@ -160,28 +162,24 @@
   document.getElementById("uname").innerText = name;
   document.getElementById("balance").innerText = balance.toFixed(2);
 
-  /* === ФИКС ПАМЯТИ ЗАДАНИЯ (ЕДИНСТВЕННОЕ ДОБАВЛЕНИЕ) === */
+  /* ===== ФИКС ПАМЯТИ ЗАДАНИЯ (КАК БЫЛО) ===== */
   const taskDoneKey = "task1_done_" + uid;
   if (localStorage.getItem(taskDoneKey)) {
     document.getElementById("task1")?.remove();
   }
-  /* === КОНЕЦ ФИКСА === */
 
   function show(id) {
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
-
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     event.currentTarget.classList.add("active");
   }
 
   function completeTask() {
     if (localStorage.getItem(taskDoneKey)) return;
-
     balance += 0.1;
     localStorage.setItem("balance_" + uid, balance);
     localStorage.setItem(taskDoneKey, "1");
-
     document.getElementById("balance").innerText = balance.toFixed(2);
     document.getElementById("task1").remove();
   }
@@ -190,7 +188,6 @@
     const last = Number(localStorage.getItem("bonus_" + uid)) || 0;
     const now = Date.now();
     if (now - last < 86400000) return;
-
     balance += 0.01;
     localStorage.setItem("balance_" + uid, balance);
     localStorage.setItem("bonus_" + uid, now);
@@ -202,10 +199,8 @@
     const last = Number(localStorage.getItem("bonus_" + uid)) || 0;
     const now = Date.now();
     const diff = 86400000 - (now - last);
-
     const btn = document.getElementById("bonusBtn");
     const timer = document.getElementById("bonusTimer");
-
     if (diff <= 0) {
       btn.disabled = false;
       timer.innerText = "Бонус доступен";
@@ -216,9 +211,36 @@
       timer.innerText = `Доступно через ${h}ч ${m}м`;
     }
   }
-
   updateBonus();
   setInterval(updateBonus, 60000);
+
+  /* ===== РЕФЕРАЛЬНАЯ СИСТЕМА (ДОБАВЛЕНО) ===== */
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("ref");
+  const refUsedKey = "ref_used_" + uid;
+
+  if (ref && ref !== String(uid) && !localStorage.getItem(refUsedKey)) {
+    balance += 0.05;
+    localStorage.setItem("balance_" + uid, balance);
+    localStorage.setItem(refUsedKey, ref);
+
+    const countKey = "ref_count_" + ref;
+    const c = Number(localStorage.getItem(countKey)) || 0;
+    localStorage.setItem(countKey, c + 1);
+
+    document.getElementById("balance").innerText = balance.toFixed(2);
+  }
+
+  const myRefCount = Number(localStorage.getItem("ref_count_" + uid)) || 0;
+  document.getElementById("refCount").innerText = myRefCount;
+
+  const refLink = location.origin + location.pathname + "?ref=" + uid;
+  document.getElementById("refLink").innerText = refLink;
+
+  function copyRef() {
+    navigator.clipboard.writeText(refLink);
+    alert("Реф-ссылка скопирована");
+  }
 </script>
 
 </body>
