@@ -161,6 +161,7 @@
 
   const user = tg.initDataUnsafe.user || {};
   const uid = user.id || 0;
+  const TASK_KEY = "task1_done_" + uid;
   const name = user.first_name || "Гость";
 
   let balance = Number(localStorage.getItem("balance_" + uid)) || 0;
@@ -175,14 +176,16 @@
 
     document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
     event.currentTarget.classList.add("active");
-  }
+    function completeTask() {
+  if (localStorage.getItem(TASK_KEY)) return;
 
-  function completeTask() {
-    balance += 0.1;
-    localStorage.setItem("balance_" + uid, balance);
-    document.getElementById("balance").innerText = balance.toFixed(2);
-    document.getElementById("task1").remove();
-  }
+  balance += 0.1;
+  localStorage.setItem("balance_" + uid, balance);
+  localStorage.setItem(TASK_KEY, "done");
+
+  document.getElementById("balance").innerText = balance.toFixed(2);
+  document.getElementById("task1").remove();
+}
 
   function claimBonus() {
     const last = Number(localStorage.getItem("bonus_" + uid)) || 0;
@@ -218,7 +221,9 @@
 
   updateBonus();
   setInterval(updateBonus, 60000);
-</script>
+</script> if (localStorage.getItem(TASK_KEY)) {
+  document.getElementById("task1")?.remove();
+}
 
 </body>
 </html>
