@@ -1,217 +1,223 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xab Wallet</title>
+  <meta charset="UTF-8">
+  <title>Xab Wallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* ===== ОСНОВА ===== */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0a0f1e;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    }
 
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(180deg, #0b1e26, #102f3a);
-  color: #fff;
-}
+    /* ===== КРИПТО ФОН ===== */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, rgba(0,180,255,0.15), transparent 40%),
+        radial-gradient(circle at bottom, rgba(0,255,170,0.12), transparent 45%),
+        linear-gradient(180deg, #0a0f1e, #0c1b2a, #0a0f1e);
+      z-index: -1;
+    }
 
-.screen {
-  display: none;
-  padding: 20px;
-  padding-bottom: 100px;
-}
+    /* ===== ЭКРАНЫ ===== */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: 20px;
+      padding-bottom: 110px;
+      box-sizing: border-box;
+    }
 
-h2 {
-  margin-top: 0;
-}
+    .screen.active {
+      display: block;
+    }
 
-/* ===== КНОПКИ ===== */
-button {
-  background: linear-gradient(135deg, #2af598, #009efd);
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  color: #000;
-  font-size: 16px;
-  font-weight: bold;
-  width: 100%;
-  margin-top: 10px;
-}
+    h2 {
+      margin-top: 0;
+      font-size: 22px;
+    }
 
-/* ===== ЗАДАНИЯ ===== */
-.task {
-  background: rgba(255,255,255,0.07);
-  border-radius: 14px;
-  padding: 15px;
-  margin-bottom: 12px;
-}
+    /* ===== КАРТОЧКИ ===== */
+    .card {
+      background: rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
 
-/* ===== НИЖНЕЕ МЕНЮ ===== */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: rgba(10,25,30,0.95);
-  backdrop-filter: blur(12px);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
+    button {
+      width: 100%;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 11px;
-  color: #8fa3ad;
-}
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-.nav-item .icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  margin-bottom: 4px;
-}
+    /* ===== НИЖНЕЕ МЕНЮ ===== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: rgba(10,15,30,0.9);
+      backdrop-filter: blur(15px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
 
-.nav-item.active {
-  color: #fff;
-}
+    .nav-btn {
+      text-align: center;
+      color: #8fa3b8;
+      font-size: 12px;
+    }
 
-.nav-item.active .icon {
-  background: linear-gradient(135deg, #2af598, #009efd);
-  color: #000;
-}
-</style>
+    .nav-btn.active {
+      color: #00c6ff;
+    }
+
+    .nav-btn div {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- ===== ЭКРАН ЗАДАНИЙ ===== -->
-<div id="tasks" class="screen">
+<!-- ===== ЗАДАНИЯ ===== -->
+<div class="screen active" id="tasks">
   <h2>📋 Задания</h2>
 
-  <div class="task" id="task1">
-    Подписаться на Telegram канал
-    <button onclick="completeTask('task1', 5)">Выполнить (+5)</button>
-  </div>
-
-  <div class="task" id="task2">
-    Перейти на сайт партнёра
-    <button onclick="completeTask('task2', 10)">Выполнить (+10)</button>
+  <div class="card" id="task1">
+    <p>Подписаться на Telegram</p>
+    <button onclick="completeTask()">Выполнить +0.1 TON</button>
   </div>
 </div>
 
 <!-- ===== БОНУСЫ ===== -->
-<div id="bonus" class="screen">
+<div class="screen" id="bonus">
   <h2>🎁 Бонусы</h2>
-  <button id="dailyBonusBtn" onclick="claimBonus()">Получить 0.01 TON 🎁</button>
-  <p id="bonusTimer"></p>
-</div>
 
-<!-- ===== ИНВЕСТИЦИИ ===== -->
-<div id="invest" class="screen">
-  <h2>📈 Инвестиции</h2>
-  <p>Скоро здесь появятся инвестиционные планы</p>
+  <div class="card">
+    <button id="bonusBtn" onclick="claimBonus()">Получить 0.01 TON 🎁</button>
+    <p id="bonusTimer" style="margin-top:10px; opacity:0.7;"></p>
+  </div>
 </div>
 
 <!-- ===== ПРОФИЛЬ ===== -->
-<div id="profile" class="screen">
+<div class="screen" id="profile">
   <h2>👤 Профиль</h2>
-  <p><b>ID:</b> <span id="userId"></span></p>
-  <p><b>Имя:</b> <span id="userName"></span></p>
-  <p><b>Баланс:</b> <span id="balance">0</span></p>
+
+  <div class="card">
+    <p>ID: <span id="uid">—</span></p>
+    <p>Имя: <span id="uname">—</span></p>
+    <p>Баланс: <b><span id="balance">0</span> TON</b></p>
+  </div>
+</div>
+
+<!-- ===== ИНВЕСТИЦИИ ===== -->
+<div class="screen" id="invest">
+  <h2>📈 Инвестиции</h2>
+  <div class="card">
+    <p>Скоро здесь появятся инвестиционные планы 🚀</p>
+  </div>
 </div>
 
 <!-- ===== НИЖНЕЕ МЕНЮ ===== -->
 <div class="bottom-nav">
-  <div class="nav-item active" onclick="showScreen('tasks', this)">
-    <div class="icon">📋</div>
-    Задания
-  </div>
-  <div class="nav-item" onclick="showScreen('bonus', this)">
-    <div class="icon">🎁</div>
-    Бонусы
-  </div>
-  <div class="nav-item" onclick="showScreen('invest', this)">
-    <div class="icon">📈</div>
-    Инвестиции
-  </div>
-  <div class="nav-item" onclick="showScreen('profile', this)">
-    <div class="icon">👤</div>
-    Профиль
-  </div>
+  <div class="nav-btn active" onclick="show('tasks')"><div>📋</div>Задания</div>
+  <div class="nav-btn" onclick="show('bonus')"><div>🎁</div>Бонусы</div>
+  <div class="nav-btn" onclick="show('invest')"><div>📈</div>Инвестиции</div>
+  <div class="nav-btn" onclick="show('profile')"><div>👤</div>Профиль</div>
 </div>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.ready();
+  const tg = window.Telegram.WebApp;
+  tg.ready();
 
-const user = tg.initDataUnsafe.user || {};
-const userId = user.id || 'guest';
-const userName = user.first_name || 'Гость';
+  const user = tg.initDataUnsafe.user || {};
+  const uid = user.id || 0;
+  const name = user.first_name || "Гость";
 
-document.getElementById('userId').innerText = userId;
-document.getElementById('userName').innerText = userName;
+  let balance = Number(localStorage.getItem("balance_" + uid)) || 0;
 
-let balance = Number(localStorage.getItem('balance_' + userId)) || 0;
-document.getElementById('balance').innerText = balance;
+  document.getElementById("uid").innerText = uid;
+  document.getElementById("uname").innerText = name;
+  document.getElementById("balance").innerText = balance.toFixed(2);
 
-// ===== ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ =====
-function showScreen(screen, el) {
-  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-  document.getElementById(screen).style.display = 'block';
-  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-}
-showScreen('tasks', document.querySelector('.nav-item'));
+  function show(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 
-// ===== ЗАДАНИЯ =====
-function completeTask(id, reward) {
-  if (localStorage.getItem(id + '_' + userId)) return;
-  balance += reward;
-  localStorage.setItem('balance_' + userId, balance);
-  localStorage.setItem(id + '_' + userId, 'done');
-  document.getElementById('balance').innerText = balance;
-  document.getElementById(id).remove();
-}
-
-// ===== БОНУС 24 ЧАСА =====
-const bonusKey = 'bonus_' + userId;
-
-function claimBonus() {
-  const last = localStorage.getItem(bonusKey);
-  const now = Date.now();
-  if (last && now - last < 86400000) return;
-  balance += 0.01;
-  localStorage.setItem('balance_' + userId, balance);
-  localStorage.setItem(bonusKey, now);
-  document.getElementById('balance').innerText = balance.toFixed(2);
-}
-
-setInterval(() => {
-  const last = localStorage.getItem(bonusKey);
-  const btn = document.getElementById('dailyBonusBtn');
-  if (!last) return;
-  const diff = 86400000 - (Date.now() - last);
-  if (diff <= 0) {
-    btn.disabled = false;
-    btn.innerText = 'Получить 0.01 TON 🎁';
-    document.getElementById('bonusTimer').innerText = '';
-  } else {
-    btn.disabled = true;
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor(diff % 3600000 / 60000);
-    document.getElementById('bonusTimer').innerText = `Доступно через ${h}ч ${m}м`;
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    event.currentTarget.classList.add("active");
   }
-}, 1000);
+
+  function completeTask() {
+    balance += 0.1;
+    localStorage.setItem("balance_" + uid, balance);
+    document.getElementById("balance").innerText = balance.toFixed(2);
+    document.getElementById("task1").remove();
+  }
+
+  function claimBonus() {
+    const last = Number(localStorage.getItem("bonus_" + uid)) || 0;
+    const now = Date.now();
+
+    if (now - last < 86400000) return;
+
+    balance += 0.01;
+    localStorage.setItem("balance_" + uid, balance);
+    localStorage.setItem("bonus_" + uid, now);
+    document.getElementById("balance").innerText = balance.toFixed(2);
+    updateBonus();
+  }
+
+  function updateBonus() {
+    const last = Number(localStorage.getItem("bonus_" + uid)) || 0;
+    const now = Date.now();
+    const diff = 86400000 - (now - last);
+
+    const btn = document.getElementById("bonusBtn");
+    const timer = document.getElementById("bonusTimer");
+
+    if (diff <= 0) {
+      btn.disabled = false;
+      timer.innerText = "Бонус доступен";
+    } else {
+      btn.disabled = true;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      timer.innerText = `Доступно через ${h}ч ${m}м`;
+    }
+  }
+
+  updateBonus();
+  setInterval(updateBonus, 60000);
 </script>
 
 </body>
