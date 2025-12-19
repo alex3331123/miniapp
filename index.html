@@ -54,7 +54,6 @@
       color: #aaa;
     }
 
-    /* bottom menu */
     .bottom-menu {
       position: fixed;
       bottom: 0;
@@ -100,11 +99,26 @@
   <div id="tasks" class="screen">
     <h2>📋 Задания</h2>
 
+    <!-- TASK 1 -->
     <div class="card">
       <div>🔹 Простое задание</div>
       <div>Награда: +5</div>
       <button id="taskBtn1" class="main" onclick="completeTask(1,5)">
         Выполнить
+      </button>
+    </div>
+
+    <!-- TASK 2 -->
+    <div class="card">
+      <div>📢 Подписаться на канал</div>
+      <div>Награда: +10</div>
+
+      <button class="main" onclick="openChannel()">
+        Перейти в канал
+      </button>
+
+      <button id="taskBtn2" class="main" onclick="checkSubscribe()">
+        Проверить подписку
       </button>
     </div>
   </div>
@@ -128,7 +142,9 @@
     tg.expand();
 
     const user = tg.initDataUnsafe?.user;
-    if (!user) alert("Открой через Telegram");
+    if (!user) {
+      alert("Открой через Telegram");
+    }
 
     const userId = user.id;
     document.getElementById("uid").innerText = userId;
@@ -150,13 +166,39 @@
       localStorage.setItem(taskKey, "done");
       updateBalance();
       updateTaskUI(taskId);
+
       tg.HapticFeedback.impactOccurred("medium");
+    }
+
+    const CHANNEL_URL = "https://t.me/Xabarov_crypto"; // ← ЗАМЕНИ
+
+    function openChannel() {
+      tg.openTelegramLink(CHANNEL_URL);
+    }
+
+    function checkSubscribe() {
+      const taskId = 2;
+      const reward = 10;
+      const taskKey = "task_" + taskId + "_" + userId;
+
+      if (localStorage.getItem(taskKey)) {
+        tg.showAlert("Задание уже выполнено");
+        return;
+      }
+
+      balance += reward;
+      localStorage.setItem(taskKey, "done");
+      updateBalance();
+      updateTaskUI(taskId);
+
+      tg.showAlert("Подписка засчитана! +" + reward);
     }
 
     function updateTaskUI(taskId) {
       const taskKey = "task_" + taskId + "_" + userId;
       const btn = document.getElementById("taskBtn" + taskId);
-      if (localStorage.getItem(taskKey)) {
+
+      if (btn && localStorage.getItem(taskKey)) {
         btn.innerText = "✔ Выполнено";
         btn.disabled = true;
         btn.classList.add("done");
@@ -166,12 +208,14 @@
     function showScreen(name) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       document.querySelectorAll(".bottom-menu button").forEach(b => b.classList.remove("active"));
+
       document.getElementById(name).classList.add("active");
       document.getElementById("btn-" + name).classList.add("active");
     }
 
     updateBalance();
     updateTaskUI(1);
+    updateTaskUI(2);
   </script>
 
 </body>
