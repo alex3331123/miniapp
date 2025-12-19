@@ -10,67 +10,57 @@
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
-      background: #0b0b0b;
-      color: #ffffff;
+      color: #fff;
+      background:
+        radial-gradient(circle at top, rgba(46,166,255,0.15), transparent 40%),
+        linear-gradient(180deg, #0b0b0b 0%, #050505 100%);
     }
 
     .screen {
       display: none;
       padding: 20px;
-      padding-bottom: 90px;
+      padding-bottom: 100px;
     }
 
     .screen.active {
       display: block;
     }
 
-    .user {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 10px;
+    h2 {
+      margin-top: 0;
     }
 
+    /* ===== BALANCE ===== */
     .balance-card {
       background: linear-gradient(135deg, #2ea6ff, #1c7ed6);
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 18px;
+      padding: 22px;
       margin-bottom: 20px;
-    }
-
-    .balance-card h2 {
-      margin: 0;
-      font-size: 14px;
-      opacity: 0.9;
+      box-shadow: 0 10px 30px rgba(46,166,255,0.25);
     }
 
     .balance {
       font-size: 36px;
       font-weight: bold;
-      margin-top: 10px;
     }
 
+    /* ===== TASK CARD ===== */
     .card {
-      background: #161616;
-      border-radius: 14px;
+      background: rgba(22,22,22,0.9);
+      border-radius: 16px;
       padding: 16px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     button.main {
       width: 100%;
       padding: 14px;
       border: none;
-      border-radius: 12px;
-      background: #2ea6ff;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2ea6ff, #1c7ed6);
       color: #fff;
       font-size: 15px;
       margin-top: 10px;
-      transition: transform 0.1s ease, opacity 0.1s ease;
-    }
-
-    button.main:active {
-      transform: scale(0.97);
-      opacity: 0.9;
     }
 
     button.done {
@@ -78,26 +68,37 @@
       color: #777;
     }
 
-    .bottom-menu {
+    /* ===== BOTTOM NAV (как в Telegram) ===== */
+    .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 70px;
-      background: #111;
+      height: 80px;
+      background: rgba(18,18,18,0.85);
+      backdrop-filter: blur(12px);
       display: flex;
-      border-top: 1px solid #222;
+      border-top: 1px solid rgba(255,255,255,0.06);
     }
 
-    .bottom-menu button {
+    .tab {
       flex: 1;
-      background: none;
       border: none;
+      background: none;
       color: #777;
-      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      gap: 4px;
     }
 
-    .bottom-menu button.active {
+    .tab span {
+      font-size: 22px;
+    }
+
+    .tab.active {
       color: #2ea6ff;
       font-weight: 600;
     }
@@ -106,137 +107,91 @@
 
 <body>
 
-  <!-- HOME -->
-  <div id="home" class="screen active">
-    <div class="user" id="userInfo"></div>
-
-    <div class="balance-card">
-      <h2>💰 Баланс</h2>
-      <div class="balance" id="balance">0</div>
-    </div>
+<!-- HOME -->
+<div id="home" class="screen active">
+  <h2>💰 Баланс</h2>
+  <div class="balance-card">
+    <div class="balance" id="balance">0</div>
   </div>
+</div>
 
-  <!-- TASKS -->
-  <div id="tasks" class="screen">
-    <h2>📋 Задания</h2>
+<!-- TASKS -->
+<div id="tasks" class="screen">
+  <h2>📋 Задания</h2>
 
-    <!-- TASK 1 -->
-    <div class="card">
-      <div>🔹 Простое задание</div>
-      <div>Награда: +5</div>
-      <button id="taskBtn1" class="main" onclick="completeTask(1,5)">
-        Выполнить
-      </button>
-    </div>
-
-    <!-- TASK 2 -->
-    <div class="card">
-      <div>📢 Подписаться на канал</div>
-      <div>Награда: +10</div>
-
-      <button class="main" onclick="openChannel()">
-        Перейти в канал
-      </button>
-
-      <button id="taskBtn2" class="main" onclick="checkSubscribe()">
-        Проверить подписку
-      </button>
-    </div>
+  <div class="card">
+    <div>Простое задание</div>
+    <button id="task1" class="main" onclick="completeTask(1,5)">
+      Продолжить (+5)
+    </button>
   </div>
+</div>
 
-  <!-- PROFILE -->
-  <div id="profile" class="screen">
-    <h2>💼 Профиль</h2>
-    <p>ID: <span id="uid"></span></p>
-  </div>
+<!-- PROFILE -->
+<div id="profile" class="screen">
+  <h2>👤 Профиль</h2>
+  <p>ID: <span id="uid"></span></p>
+</div>
 
-  <!-- BOTTOM MENU -->
-  <div class="bottom-menu">
-    <button id="btn-home" class="active" onclick="showScreen('home')">🏠 Главная</button>
-    <button id="btn-tasks" onclick="showScreen('tasks')">📋 Задания</button>
-    <button id="btn-profile" onclick="showScreen('profile')">💼 Профиль</button>
-  </div>
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="tab active" id="tab-home" onclick="showScreen('home')">
+    <span>📋</span>
+    Задания
+  </button>
 
-  <script>
-    const tg = Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+  <button class="tab" id="tab-bonus" onclick="showScreen('tasks')">
+    <span>⭐</span>
+    Бонусы
+  </button>
 
-    const user = tg.initDataUnsafe?.user;
-    if (!user) {
-      alert("Открой приложение через Telegram");
-    }
+  <button class="tab" id="tab-profile" onclick="showScreen('profile')">
+    <span>👤</span>
+    Профиль
+  </button>
+</div>
 
-    const userId = user.id;
-    document.getElementById("uid").innerText = userId;
-    document.getElementById("userInfo").innerText = "User ID: " + userId;
+<script>
+  const tg = Telegram.WebApp;
+  tg.ready();
+  tg.expand();
 
-    const balanceKey = "balance_" + userId;
-    let balance = parseInt(localStorage.getItem(balanceKey)) || 0;
+  const user = tg.initDataUnsafe?.user;
+  const userId = user?.id || 0;
+  document.getElementById("uid").innerText = userId;
 
-    function updateBalance() {
-      document.getElementById("balance").innerText = balance;
-      localStorage.setItem(balanceKey, balance);
-    }
+  const key = "balance_" + userId;
+  let balance = parseInt(localStorage.getItem(key)) || 0;
 
-    function completeTask(taskId, reward) {
-      const taskKey = "task_" + taskId + "_" + userId;
-      if (localStorage.getItem(taskKey)) return;
+  function updateBalance() {
+    document.getElementById("balance").innerText = balance;
+    localStorage.setItem(key, balance);
+  }
 
-      balance += reward;
-      localStorage.setItem(taskKey, "done");
-      updateBalance();
-      updateTaskUI(taskId);
-      tg.HapticFeedback.impactOccurred("medium");
-    }
+  function completeTask(id, reward) {
+    const tKey = "task_" + id + "_" + userId;
+    if (localStorage.getItem(tKey)) return;
 
-    const CHANNEL_URL = "https://t.me/Xabarov_crypto"; // ← ОБЯЗАТЕЛЬНО ЗАМЕНИ
-
-    function openChannel() {
-      tg.openTelegramLink(CHANNEL_URL);
-    }
-
-    function checkSubscribe() {
-      const taskId = 2;
-      const reward = 10;
-      const taskKey = "task_" + taskId + "_" + userId;
-
-      if (localStorage.getItem(taskKey)) {
-        tg.showAlert("Задание уже выполнено");
-        return;
-      }
-
-      balance += reward;
-      localStorage.setItem(taskKey, "done");
-      updateBalance();
-      updateTaskUI(taskId);
-
-      tg.showAlert("Подписка засчитана! +" + reward);
-    }
-
-    function updateTaskUI(taskId) {
-      const taskKey = "task_" + taskId + "_" + userId;
-      const btn = document.getElementById("taskBtn" + taskId);
-
-      if (btn && localStorage.getItem(taskKey)) {
-        btn.innerText = "✔ Выполнено";
-        btn.disabled = true;
-        btn.classList.add("done");
-      }
-    }
-
-    function showScreen(name) {
-      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-      document.querySelectorAll(".bottom-menu button").forEach(b => b.classList.remove("active"));
-
-      document.getElementById(name).classList.add("active");
-      document.getElementById("btn-" + name).classList.add("active");
-    }
-
+    balance += reward;
+    localStorage.setItem(tKey, "done");
     updateBalance();
-    updateTaskUI(1);
-    updateTaskUI(2);
-  </script>
+
+    const btn = document.getElementById("task" + id);
+    btn.innerText = "✔ Выполнено";
+    btn.classList.add("done");
+    btn.disabled = true;
+  }
+
+  function showScreen(name) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+
+    document.getElementById(name).classList.add("active");
+    document.getElementById("tab-" + name)?.classList.add("active");
+  }
+
+  updateBalance();
+</script>
 
 </body>
 </html>
