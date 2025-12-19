@@ -8,23 +8,15 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-/* ===== ОСНОВА ===== */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   color: white;
-
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    #0b1f2a 0%,
-    #123847 40%,
-    #0b1f2a 100%
-  );
+  background: linear-gradient(180deg, #0b1f2a 0%, #123847 40%, #0b1f2a 100%);
   background-attachment: fixed;
 }
 
-/* ===== ЭКРАНЫ ===== */
 .screen {
   display: none;
   min-height: 100vh;
@@ -37,19 +29,16 @@ body {
   display: block;
 }
 
-/* ===== ЗАГОЛОВКИ ===== */
 h2 {
   margin-top: 0;
   font-size: 22px;
 }
 
-/* ===== БАЛАНС ===== */
 .balance {
   font-size: 18px;
   margin-bottom: 16px;
 }
 
-/* ===== КАРТОЧКИ ===== */
 .task {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 14px;
@@ -68,7 +57,6 @@ h2 {
   opacity: 0.8;
 }
 
-/* ===== КНОПКИ ===== */
 .task button {
   margin-top: 10px;
   width: 100%;
@@ -80,11 +68,11 @@ h2 {
   font-size: 16px;
 }
 
-.task button:disabled {
-  background: #4a4a4a;
+.profile-item {
+  margin-bottom: 12px;
+  font-size: 16px;
 }
 
-/* ===== НИЖНЕЕ МЕНЮ ===== */
 .nav {
   position: fixed;
   bottom: 0;
@@ -116,27 +104,29 @@ h2 {
 
 <body>
 
-<!-- ===== ЗАДАНИЯ ===== -->
+<!-- ЗАДАНИЯ -->
 <div id="tasksScreen" class="screen active">
   <h2>Задания</h2>
   <div class="balance">Баланс: <span id="balance">0</span> ₽</div>
   <div id="tasks"></div>
 </div>
 
-<!-- ===== БОНУСЫ ===== -->
+<!-- БОНУСЫ -->
 <div id="bonusScreen" class="screen">
   <h2>Бонусы</h2>
   🎁 Скоро здесь будут бонусы
 </div>
 
-<!-- ===== ПРОФИЛЬ ===== -->
+<!-- ПРОФИЛЬ -->
 <div id="profileScreen" class="screen">
   <h2>Профиль</h2>
-  <p>ID пользователя:</p>
-  <b id="uid"></b>
+
+  <div class="profile-item">🆔 ID: <b id="profileId"></b></div>
+  <div class="profile-item">👤 Имя: <b id="profileName"></b></div>
+  <div class="profile-item">💰 Баланс: <b><span id="profileBalance">0</span> ₽</b></div>
 </div>
 
-<!-- ===== НИЖНЕЕ МЕНЮ ===== -->
+<!-- НИЖНЕЕ МЕНЮ -->
 <div class="nav">
   <button id="btnTasks" class="active" onclick="showScreen('tasks')">Задания</button>
   <button id="btnBonus" onclick="showScreen('bonus')">Бонусы</button>
@@ -144,22 +134,26 @@ h2 {
 </div>
 
 <script>
-/* ===== TELEGRAM ===== */
 const tg = Telegram.WebApp;
 tg.ready();
 
-/* ===== USER ===== */
-const userId = tg.initDataUnsafe?.user?.id || "guest";
-document.getElementById("uid").innerText = userId;
+/* USER */
+const user = tg.initDataUnsafe?.user || {};
+const userId = user.id || "guest";
+const userName = user.first_name || "Без имени";
 
-/* ===== STORAGE ===== */
+/* PROFILE */
+document.getElementById("profileId").innerText = userId;
+document.getElementById("profileName").innerText = userName;
+
+/* STORAGE */
 const balanceKey = `balance_${userId}`;
 const tasksKey = `tasks_${userId}`;
 
 let balance = parseInt(localStorage.getItem(balanceKey)) || 0;
 let completedTasks = JSON.parse(localStorage.getItem(tasksKey)) || [];
 
-/* ===== ЗАДАНИЯ ===== */
+/* TASKS */
 const tasks = [
   { id: 1, title: "Подписаться на Telegram канал", reward: 10 },
   { id: 2, title: "Открыть сайт партнёра", reward: 15 },
@@ -173,11 +167,13 @@ function save() {
 
 function renderTasks() {
   document.getElementById("balance").innerText = balance;
+  document.getElementById("profileBalance").innerText = balance;
+
   const container = document.getElementById("tasks");
   container.innerHTML = "";
 
   tasks.forEach(task => {
-    const done = completedTasks.includes(task.id);
+    if (completedTasks.includes(task.id)) return; // ❗ ЗАДАНИЕ ИСЧЕЗАЕТ
 
     const div = document.createElement("div");
     div.className = "task";
@@ -185,25 +181,21 @@ function renderTasks() {
     div.innerHTML = `
       <div class="task-title">${task.title}</div>
       <div class="task-reward">+${task.reward} ₽</div>
-      <button ${done ? "disabled" : ""}>
-        ${done ? "Выполнено" : "Выполнить"}
-      </button>
+      <button>Выполнить</button>
     `;
 
-    if (!done) {
-      div.querySelector("button").onclick = () => {
-        completedTasks.push(task.id);
-        balance += task.reward;
-        save();
-        renderTasks();
-      };
-    }
+    div.querySelector("button").onclick = () => {
+      completedTasks.push(task.id);
+      balance += task.reward;
+      save();
+      renderTasks();
+    };
 
     container.appendChild(div);
   });
 }
 
-/* ===== НАВИГАЦИЯ ===== */
+/* NAV */
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
@@ -227,3 +219,4 @@ renderTasks();
 
 </body>
 </html>
+  
