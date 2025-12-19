@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xab Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: white;
+    }
+    .screen {
+      display: none;
+      padding: 20px;
+      padding-bottom: 90px;
+    }
+    .active { display: block; }
+
+    .bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: #111;
+      display: flex;
+      border-top: 1px solid #222;
+    }
+    .bottom button {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 14px;
+    }
+    .bottom button.active {
+      color: #2ea6ff;
+      font-weight: bold;
+    }
+    button.main {
+      background: #2ea6ff;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+      color: white;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="home" class="screen active">
+  <h2>💰 Баланс</h2>
+  <h1 id="balance">0</h1>
+</div>
+
+<div id="tasks" class="screen">
+  <h2>📋 Задания</h2>
+  <button class="main" onclick="add()">Выполнить задание (+10)</button>
+</div>
+
+<div id="profile" class="screen">
+  <h2>💼 Профиль</h2>
+  <p>ID: <span id="uid"></span></p>
+</div>
+
+<div class="bottom">
+  <button id="b-home" class="active" onclick="show('home')">🏠</button>
+  <button id="b-tasks" onclick="show('tasks')">📋</button>
+  <button id="b-profile" onclick="show('profile')">💼</button>
+</div>
+
+<script>
+  const tg = Telegram.WebApp;
+  tg.expand();
+
+  let balance = Number(localStorage.getItem('balance') || 0);
+  document.getElementById('balance').innerText = balance;
+  document.getElementById('uid').innerText =
+    tg.initDataUnsafe?.user?.id || 'guest';
+
+  function add() {
+    balance += 10;
+    localStorage.setItem('balance', balance);
+    document.getElementById('balance').innerText = balance;
+    tg.showAlert('Готово! +10');
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.bottom button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('b-' + id).classList.add('active');
+  }
+</script>
+
+</body>
+</html>
