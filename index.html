@@ -39,7 +39,7 @@ h2 {
   margin-bottom: 16px;
 }
 
-.task {
+.task, .bonus-box {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 14px;
@@ -57,7 +57,7 @@ h2 {
   opacity: 0.8;
 }
 
-.task button {
+button {
   margin-top: 10px;
   width: 100%;
   padding: 12px;
@@ -66,6 +66,10 @@ h2 {
   background: #2ea6ff;
   color: white;
   font-size: 16px;
+}
+
+button:disabled {
+  opacity: 0.5;
 }
 
 .profile-item {
@@ -107,26 +111,30 @@ h2 {
 <!-- ЗАДАНИЯ -->
 <div id="tasksScreen" class="screen active">
   <h2>Задания</h2>
-  <div class="balance">Баланс: <span id="balance">0</span> ₽</div>
+  <div class="balance">Баланс: <span id="balance">0</span></div>
   <div id="tasks"></div>
 </div>
 
 <!-- БОНУСЫ -->
 <div id="bonusScreen" class="screen">
   <h2>Бонусы</h2>
-  🎁 Скоро здесь будут бонусы
+
+  <div class="bonus-box">
+    <div style="font-size:16px; margin-bottom:6px;">🎁 Ежедневный бонус</div>
+    <div id="bonusTimer" style="font-size:14px; opacity:0.8;"></div>
+    <button id="bonusBtn" onclick="claimBonus()">Получить 0.01 TON 🎁</button>
+  </div>
 </div>
 
 <!-- ПРОФИЛЬ -->
 <div id="profileScreen" class="screen">
   <h2>Профиль</h2>
-
   <div class="profile-item">🆔 ID: <b id="profileId"></b></div>
   <div class="profile-item">👤 Имя: <b id="profileName"></b></div>
-  <div class="profile-item">💰 Баланс: <b><span id="profileBalance">0</span> ₽</b></div>
+  <div class="profile-item">💰 Баланс: <b><span id="profileBalance">0</span></b></div>
 </div>
 
-<!-- НИЖНЕЕ МЕНЮ -->
+<!-- НАВИГАЦИЯ -->
 <div class="nav">
   <button id="btnTasks" class="active" onclick="showScreen('tasks')">Задания</button>
   <button id="btnBonus" onclick="showScreen('bonus')">Бонусы</button>
@@ -137,23 +145,21 @@ h2 {
 const tg = Telegram.WebApp;
 tg.ready();
 
-/* USER */
 const user = tg.initDataUnsafe?.user || {};
 const userId = user.id || "guest";
 const userName = user.first_name || "Без имени";
 
-/* PROFILE */
 document.getElementById("profileId").innerText = userId;
 document.getElementById("profileName").innerText = userName;
 
-/* STORAGE */
 const balanceKey = `balance_${userId}`;
 const tasksKey = `tasks_${userId}`;
+const bonusKey = `bonus_${userId}`;
 
-let balance = parseInt(localStorage.getItem(balanceKey)) || 0;
+let balance = parseFloat(localStorage.getItem(balanceKey)) || 0;
 let completedTasks = JSON.parse(localStorage.getItem(tasksKey)) || [];
+let lastBonus = parseInt(localStorage.getItem(bonusKey)) || 0;
 
-/* TASKS */
 const tasks = [
   { id: 1, title: "Подписаться на Telegram канал", reward: 10 },
   { id: 2, title: "Открыть сайт партнёра", reward: 15 },
@@ -163,24 +169,24 @@ const tasks = [
 function save() {
   localStorage.setItem(balanceKey, balance);
   localStorage.setItem(tasksKey, JSON.stringify(completedTasks));
+  localStorage.setItem(bonusKey, lastBonus);
 }
 
 function renderTasks() {
-  document.getElementById("balance").innerText = balance;
-  document.getElementById("profileBalance").innerText = balance;
+  document.getElementById("balance").innerText = balance.toFixed(2);
+  document.getElementById("profileBalance").innerText = balance.toFixed(2);
 
   const container = document.getElementById("tasks");
   container.innerHTML = "";
 
   tasks.forEach(task => {
-    if (completedTasks.includes(task.id)) return; // ❗ ЗАДАНИЕ ИСЧЕЗАЕТ
+    if (completedTasks.includes(task.id)) return;
 
     const div = document.createElement("div");
     div.className = "task";
-
     div.innerHTML = `
       <div class="task-title">${task.title}</div>
-      <div class="task-reward">+${task.reward} ₽</div>
+      <div class="task-reward">+${task.reward}</div>
       <button>Выполнить</button>
     `;
 
@@ -195,28 +201,48 @@ function renderTasks() {
   });
 }
 
-/* NAV */
+/* БОНУС */
+function updateBonus() {
+  const now = Date.now();
+  const diff = 86400000 - (now - lastBonus);
+  const btn = document.getElementById("bonusBtn");
+  const timer = document.getElementById("bonusTimer");
+
+  if (diff <= 0) {
+    btn.disabled = false;
+    timer.innerText = "Можно получить бонус 🎉";
+  } else {
+    btn.disabled = true;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    timer.innerText = `Доступно через ${h}ч ${m}м ${s}с`;
+  }
+}
+
+function claimBonus() {
+  lastBonus = Date.now();
+  balance += 0.01;
+  save();
+  renderTasks();
+  updateBonus();
+}
+
+setInterval(updateBonus, 1000);
+
+/* НАВ */
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
 
-  if (name === "tasks") {
-    tasksScreen.classList.add("active");
-    btnTasks.classList.add("active");
-  }
-  if (name === "bonus") {
-    bonusScreen.classList.add("active");
-    btnBonus.classList.add("active");
-  }
-  if (name === "profile") {
-    profileScreen.classList.add("active");
-    btnProfile.classList.add("active");
-  }
+  if (name === "tasks") { tasksScreen.classList.add("active"); btnTasks.classList.add("active"); }
+  if (name === "bonus") { bonusScreen.classList.add("active"); btnBonus.classList.add("active"); }
+  if (name === "profile") { profileScreen.classList.add("active"); btnProfile.classList.add("active"); }
 }
 
 renderTasks();
+updateBonus();
 </script>
 
 </body>
 </html>
-  
